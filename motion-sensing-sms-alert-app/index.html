@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<!--
+This app demonstrates the use of a phone as motion sensor alarm. 
+It waits for the motion once user activates it by pressing the 'start' button. 
+Once motion is detected, the app send an alert SMS to the given number.
+
+Please note that you must change number variable with your own number for this example to work.
+Also, please use an active SIM card with sufficient balance to send a SMS.
+-->
+<head>
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no
+		initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+
+	<title>Motion Sensing SMS Alert App</title>
+
+	<style>
+		@import 'ui/css/evothings-app.css';
+	</style>
+
+	<script>
+	// Redirect console.log to Evothings Workbench.
+	if (window.hyper && window.hyper.log) { console.log = hyper.log }
+	</script>
+
+	<script src="cordova.js"></script>
+	<script src="libs/jquery/jquery.js"></script>
+
+</head>
+
+<body ontouchstart=""><!-- ontouchstart="" enables low-delay CSS transitions. -->
+
+	<header>
+		<button class="back" onclick="history.back()">
+			<img src="ui/images/arrow-left.svg" />
+		</button>
+
+		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
+
+		<!--<button class="menu" onclick=""><img src="ui/images/menu.svg" /></button>-->
+	</header>
+
+	<h1>Motion Sensing SMS Alert App</h1>
+	
+	<button class="green" onclick="app.start()">START</button>
+	<button class="charcoal" onclick="app.stop()">FINISH</button>
+	
+	<script>
+
+    // The watch id references the current `watchAcceleration`
+    var watchID = null
+
+    // Start watching the acceleration
+    function startWatch() {
+
+        // Update acceleration every 3 seconds
+        var options = { frequency: 3000 }
+
+        watchID = navigator.accelerometer.watchAcceleration(onSuccess, onError, options)
+    }
+
+    // Stop watching the acceleration
+    function stopWatch() {
+        if (watchID) {
+            navigator.accelerometer.clearWatch(watchID)
+            watchID = null
+        }
+    }
+
+    // onSuccess: Get a snapshot of the current acceleration
+    function onSuccess(acceleration) {
+        var element = document.getElementById('message')
+        var pxmotion = 0
+        var pymotion = 0
+        
+        //round the accelerometer readings                    
+		var xmotion = Math.round(acceleration.x,4)
+		var ymotion = Math.round(acceleration.y,4)
+		
+		//compare current readings with previous ones
+		if(xmotion != pxmotion || ymotion != pymotion){
+			element.innerHTML = 'Motion detected'
+			
+			//send alert SMS
+			app.sendSMS()
+			
+			pxmotion = xmotion
+			pymotion = ymotion
+		}
+    }
+
+    // onError: Failed to get the acceleration
+    function onError() {
+        alert('onError!')
+    }
+
+    </script>
+    
+    <div id="message">Disconnected</div>
+
+	<script>
+	// Application object.
+	var app = {}
+
+	app.start = function()
+	{
+		startWatch()
+		$('#message').html('Waiting for motion...')	
+	}
+
+	app.stop = function()
+	{
+		stopWatch()
+		$('#message').html('Disconnected')
+	}
+	
+	// Send the alert SMS
+	app.sendSMS = function()
+	{
+		var number = '0xxxxxxxxxx' //replace with your own phone number
+		var message = 'Motion has been detected'
+		var options = {}
+
+		var success = function () { 
+			alert('Message sent successfully') 
+			app.stop()
+		}
+		var error = function (e) { 
+			alert('Message Failed:' + e)
+		}
+			
+		sms.send(number, message, options, success, error)
+	}
+	</script>
+
+</body>
+
+</html>
