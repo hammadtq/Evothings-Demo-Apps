@@ -20,13 +20,7 @@ Also, please use an active SIM card with sufficient balance to send a SMS.
 		@import 'ui/css/evothings-app.css';
 	</style>
 
-	<script>
-	// Redirect console.log to Evothings Workbench.
-	if (window.hyper && window.hyper.log) { console.log = hyper.log }
-	</script>
-
 	<script src="cordova.js"></script>
-	<script src="libs/jquery/jquery.js"></script>
 
 </head>
 
@@ -43,96 +37,132 @@ Also, please use an active SIM card with sufficient balance to send a SMS.
 	</header>
 
 	<h1>Motion Sensing SMS Alert App</h1>
+
+	<p>
+		Status: <span id="status_message">Stopped</span>
+	</p>
+
+	<button class="green wide big" onclick="app.waitForMotion()">
+		Wait for movement
+	</button>
+
+	<br />
 	
-	<button class="green" onclick="app.start()">START</button>
-	<button class="charcoal" onclick="app.stop()">FINISH</button>
-	
+	<button class="charcoal wide" onclick="app.stopWaitForMotion()">
+		Stop
+	</button>
+
 	<script>
 
-    // The watch id references the current `watchAcceleration`
-    var watchID = null
-
-    // Start watching the acceleration
-    function startWatch() {
-
-        // Update acceleration every 3 seconds
-        var options = { frequency: 3000 }
-
-        watchID = navigator.accelerometer.watchAcceleration(onSuccess, onError, options)
-    }
-
-    // Stop watching the acceleration
-    function stopWatch() {
-        if (watchID) {
-            navigator.accelerometer.clearWatch(watchID)
-            watchID = null
-        }
-    }
-
-    // onSuccess: Get a snapshot of the current acceleration
-    function onSuccess(acceleration) {
-        var element = document.getElementById('message')
-        var pxmotion = 0
-        var pymotion = 0
-        
-        //round the accelerometer readings                    
-		var xmotion = Math.round(acceleration.x,4)
-		var ymotion = Math.round(acceleration.y,4)
-		
-		//compare current readings with previous ones
-		if(xmotion != pxmotion || ymotion != pymotion){
-			element.innerHTML = 'Motion detected'
-			
-			//send alert SMS
-			app.sendSMS()
-			
-			pxmotion = xmotion
-			pymotion = ymotion
-		}
-    }
-
-    // onError: Failed to get the acceleration
-    function onError() {
-        alert('onError!')
-    }
-
-    </script>
-    
-    <div id="message">Disconnected</div>
-
-	<script>
 	// Application object.
-	var app = {}
-
-	app.start = function()
-	{
-		startWatch()
-		$('#message').html('Waiting for motion...')	
+	var app = {
+		/* Phone number through which the message will be sent upon movement.
+		 * Replace with your own phone number. */
+		PHONE_NUMBER : '0xxxxxxxxxx',
+		// Message sent to the recipient's phone upon device movement.
+		SMS_MESSAGE : 'Motion has been detected',
+		/* Interval at which to check for device movement, in milliseconds.
+		 * Lower values means we are able to detect smaller movements, and
+		 * higher values means less battery consumption.
+		 */
+		movement_check_interval : 3000
 	}
 
-	app.stop = function()
+	app.setStatusText = function (statusText)
 	{
-		stopWatch()
-		$('#message').html('Disconnected')
+		// ID of HTML element in which to display status messages.
+		document.getElementById('status_message').innerHTML = statusText
+	}
+
+	// Start watching the mobile device's movement (acceleration).
+	app.waitForMotion = function()
+	{
+		/* Start watching the device's acceleration to determine if it has
+		 * moved, unless we're already watching the device's movement. */
+		if (!app.watchId)
+			app.watchID = navigator.accelerometer.watchAcceleration(
+				app.onAccelerationReceived,
+				app.onAccelerationError,
+				{ frequency: app.movement_check_interval }
+			)
+
+		app.setStatusText('Waiting for motion...')
+	}
+
+	// Stop watching the mobile device's movement.
+	app.stopWaitForMotion = function()
+	{
+		navigator.accelerometer.clearWatch(app.watchID)
+		app.watchID = null
+
+		app.setStatusText('Stopped')
 	}
 	
-	// Send the alert SMS
+	// Send the alert SMS.
 	app.sendSMS = function()
 	{
-		var number = '0xxxxxxxxxx' //replace with your own phone number
-		var message = 'Motion has been detected'
 		var options = {}
 
-		var success = function () { 
+		var success = function ()
+		{
+			app.stopWaitForMotion()
 			alert('Message sent successfully') 
-			app.stop()
 		}
-		var error = function (e) { 
-			alert('Message Failed:' + e)
+		var error = function (e)
+		{
+			alert('Message failed:' + e)
 		}
-			
-		sms.send(number, message, options, success, error)
+
+		sms.send(
+			app.PHONE_NUMBER,
+			app.SMS_MESSAGE,
+			options,
+			success,
+			error
+		)
 	}
+
+	/* onAccelerationReceived:
+	 * Called when an accelerometer value has been received from the mobile
+	 * device. Determines whether the device has moved since the last check. */
+	app.onAccelerationReceived = function(acceleration)
+	{
+		// Round the accelerometer readings to avoid detecting small vibrations.
+		var xMotion = Math.round(acceleration.x, 4)
+		var yMotion = Math.round(acceleration.y, 4)
+
+		/* Compare the current readings with previous ones. If they differ 
+		 * we conclude that the device has moved. If no previous readings were
+		 * collected, compare with 0. */
+		if (xMotion != (app.previous_xMotion || 0) ||
+			yMotion != (app.previous_yMotion || 0))
+		{
+			app.setStatusText('Motion detected')
+
+			// Send alert SMS.
+			app.sendSMS()
+
+			/* Stop checking for device movement to avoid sending multiple SMS.
+			 * TODO: re-enable the movement checking after e.g. 1 minute. */
+			app.stopWaitForMotion()
+
+			// Store the readings for use in the comparison the next time.
+			app.previous_xMotion = xMotion
+			app.previous_yMotion = yMotion
+		}
+	}
+
+	/* onAccelerationError:
+	 * Called when failing to get the device's current acceleration. This could
+	 * be caused by that the Accelerometer plugin doesn't work, that the device
+	 * is lacking an accelerometer or that it has been disabled by the user. */
+	app.onAccelerationError = function()
+	{
+		// Stop the movement watch to avoid multiple alerts.
+		app.stopWaitForMotion()
+		alert('Failed to retrieve the device\'s movement.')
+	}
+
 	</script>
 
 </body>
