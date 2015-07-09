@@ -1,0 +1,26 @@
+<!-- This is the template file for home view, it shows the connection form -->
+<ion-pane>
+  <ion-header-bar class="bar-stable">
+	<h1 class="title">SD Card File List using Ionic</h1>
+  </ion-header-bar>
+<ion-content class="has-header">
+	<div class="list">
+		<label class="item item-input item-stacked-label">
+			<span class="input-label">Enter IP-address of the Arduino</span>
+			<input type="text" placeholder="x.x.x.x" id="ArduinoIpAddress">
+		</label>
+		<button class="button button-block button-assertive" onclick="app.connect()">
+			Connect
+		</button>
+		<p>This app is built in Ionic Framework using Evothings Studio.</p>
+		<p>The purpose of the app is to connect to the Arduino using WiFi shield and
+		and list the names of the files stored in a SD card directory.
+		<p>Make sure your WiFi shield is correctly stacked on top of Arduino and it has 
+		a microSD card with some files saved in /MUSIC directory.
+		Next, upload the accompanying sketch to your Arduino, input the IP-address of 
+		Arduino above and press connect. The app will navigate to a second view, 
+		listing the file names retrieved from your SD card. </p>
+		</p>
+	</div>
+</ion-content>
+</ion-pane>

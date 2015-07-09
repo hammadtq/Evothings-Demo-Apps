@@ -1,0 +1,16 @@
+<!-- This is the template file for list view, it shows SD Card file list -->
+<ion-pane>
+  <ion-header-bar class="bar-stable">
+	<h1 class="title">SD Card File List using Ionic</h1>
+  </ion-header-bar>
+<ion-content class="has-header">
+	<ion-list ng-controller="fileList" id="fileListView">
+		<ion-item ng-repeat="item in items">
+			{{item}}
+		</ion-item>
+	</ion-list>
+<button class="button button-block button-assertive" onclick="app.disconnect()">
+		Disconnect
+</button>
+</ion-content>
+</ion-pane>
