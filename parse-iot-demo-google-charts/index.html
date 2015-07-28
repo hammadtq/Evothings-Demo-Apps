@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<!--
+Demonstration of an IoT app using the Parse API.
+-->
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="width=device-width, user-scalable=no
+		initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+
+	<title>Parse IoT Demo with Google Charts</title>
+
+	<style>
+	@import 'ui/css/evothings-app.css';
+	</style>
+
+	<script>
+	// Redirect console.log to Evothings Workbench.
+	if (window.hyper && window.hyper.log) { console.log = hyper.log }
+	</script>
+</head>
+
+<body>
+	<header>
+		<button class="back" onclick="history.back()">
+			<img src="ui/images/arrow-left.svg" />
+		</button>
+		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
+	</header>
+
+	<h1>Parse IoT Demo with Google Charts</h1>
+
+	<button class="green" onclick="connectToSensorTag()">
+		Start reading SensorTag
+	</button>
+	<button class="red" onclick="disconnectFromSensorTag()">
+		Stop reading SensorTag
+	</button>
+	
+	<div id="chart_div" style="width: 400px; height: 120px;"></div>
+
+	<p><strong>Status:</strong> <span id="status">Click the activate button on the SensorTag and tap the Start button to begin</span></p>
+
+	<p><strong>Instructions:</strong></p>
+
+	<p>This app demonstrates how to upload and download data of a Texas Instruments Bluetooth Smart SensorTag to and from Parse data cloud.</p>
+	<p>Edit the source code of file index.html to use your Parse credentials. See the README file for further help on how to create a Parse account and set up the app.</p>
+	<p>When ready to go, activate the SensorTag and press the Start button to connect and start uploading sensor data.</p>
+
+	<script src="cordova.js"></script>
+	<script src="libs/evothings/evothings.js"></script>
+	<script src="libs/evothings/tisensortag/tisensortag.js"></script>
+	<script src="//www.parsecdn.com/js/parse-1.4.0.min.js"></script>
+	<script src="https://www.google.com/jsapi"></script>
+
+	<script>
+	
+	var temp
+	
+	// Load Google visualization library
+	google.load("visualization", "1", {packages:["gauge"]})
+    google.setOnLoadCallback(drawChart)
+	
+	// SensorTag object.
+	var sensortag = evothings.tisensortag.createInstance()
+
+	// Update interval is once each minute. You can make
+	// this value smaller to get more frequent updates.
+	var temperatureInterval = 5000 // Change to 5000 for 5 second intervals.
+
+	// Timer for temperature upload.
+	var temperatureTimer = null
+
+	// Variable that holds last known temperature reading.
+	var lastTemperatureReading = '0.0'
+
+	function initialise()
+	{
+		//initialiseSensorTag()
+		initializeParse()
+		initialiseSimulationTimer()
+	}
+
+	function initializeParse()
+	{
+		// TODO: Insert your Parse Application ID and
+		// JavaScript key here.
+		Parse.initialize("Parse Application ID", "JavaScript key");
+	}
+	
+	function initialiseSimulationTimer()
+	{
+    // Timer that updates temperature values.
+    setInterval(function() {
+        lastTemperatureReading = ((Math.random() * 5) + 20).toFixed(2)
+        },
+        5000)
+        
+
+    // Timer that sends data to the cloud.
+    setInterval(onTemperatureTimer, 5000)
+	}
+	
+	
+	function drawChart() 
+	{
+	//Initial value for the chart
+	var data = google.visualization.arrayToDataTable([
+	  ['Label', 'Value'],
+	  ['Temp', 20]
+	]);
+	//config options for the chart
+	var options = {
+	  width: 400, height: 120,
+	  redFrom: 25, redTo: 30,
+	  yellowFrom:22, yellowTo: 25,
+	  minorTicks: 1, max: 30
+	};
+
+	var chart = new google.visualization.Gauge(document.getElementById('chart_div'));
+
+	chart.draw(data, options);
+	  
+	setInterval(function() {
+		//Retrieving last temperature entry from Parse cloud 
+		var ReadingObj = Parse.Object.extend("SensorTagReading")
+		var query = new Parse.Query(ReadingObj)
+		// Retrieve the most recent object
+		query.descending("createdAt")
+		query.find({
+			success: function(readingObj) {
+				temp = readingObj[0].get("Temperature")
+			}
+		});
+		//Passing the temperature value to the chart and redrawing it
+		data.setValue(0, 1, temp)
+		chart.draw(data, options)
+		}, 2500);
+	}
+	
+
+	function initialiseSensorTag()
+	{
+		// Setting the IR interval does not work as expected
+		// with the SensorTag, using an interval timer as
+		// a workaround. See function onTemperatureTimer.
+		sensortag
+			.statusCallback(statusHandler)
+			.errorCallback(errorHandler)
+			.irTemperatureCallback(irTemperatureHandler, temperatureInterval)
+	}
+
+	function connectToSensorTag()
+	{
+		// Connect to the nearest SensorTag.
+		sensortag.connectToClosestDevice()
+
+		// Clear existing interval timer if any.
+		temperatureTimer && clearInterval(temperatureTimer)
+
+		// Start the interval timer for uploading data. This is a
+		// workaround for the SensorTag interval setting.
+		temperatureTimer = setInterval(onTemperatureTimer, temperatureInterval)
+	}
+
+	function disconnectFromSensorTag()
+	{
+		// Disconnect from the SensorTag.
+		sensortag.disconnectDevice()
+
+		// Clear interval timer.
+		clearInterval(temperatureTimer)
+		temperatureTimer = null
+
+		// Update status message.
+		displayMessage('Temperature reading stopped')
+	}
+
+	function irTemperatureHandler(data)
+	{
+		// Calculate temperature from raw sensor data.
+		// We just use ambient Celsius for the example,
+		// you can edit the code for other values.
+		var values = sensortag.getIRTemperatureValues(data)
+		var ac = values.ambientTemperature
+		//var af = sensortag.celsiusToFahrenheit(ac)
+		//var tc = values.targetTemperature
+		//var tf = sensortag.celsiusToFahrenheit(tc)
+		lastTemperatureReading = ac.toFixed(2)
+	}
+
+	function onTemperatureTimer()
+	{
+		// Save the temperature value to the Parse data cloud.
+		saveSensorReading(
+			'Temperature',
+			lastTemperatureReading,
+			onSaveTemperatureSuccess(lastTemperatureReading),
+			onSaveTemperatureError)
+	}
+
+	function onSaveTemperatureSuccess(temperature)
+	{
+		// Using a closure to pass the temperature to the
+		// status message display. The returned function
+		// closure will be called as the success callback
+		// of the Parse save function.
+		return function()
+		{
+			// Display message.
+			displayMessage('Temperature saved: ' + temperature)
+
+			// Clear the message after 5 seconds.
+			setTimeout(function() {
+				displayMessage('Waiting for next reading') },
+				5000)
+		}
+	}
+
+	function onSaveTemperatureError(error)
+	{
+		displayMessage('Parse error: ' + error.message)
+	}
+
+	function saveSensorReading(key, value, successCallback, errorCallback)
+	{
+		// Create a new object for each reading.
+		var SensorTagReading = Parse.Object.extend('SensorTagReading')
+		var reading = new SensorTagReading()
+
+		// Create data object and save to Parse cloud.
+		var data = {}
+		data[key] = value
+		reading.save(data).then(successCallback, errorCallback)
+	}
+
+	function statusHandler(status)
+	{
+		displayMessage(status)
+	}
+
+	function errorHandler(error)
+	{
+		displayMessage('SensorTag error: ' + error)
+	}
+
+	function displayMessage(message)
+	{
+		document.getElementById('status').innerHTML = message
+		console.log(message)
+	}
+
+	document.addEventListener(
+		'deviceready',
+		function() { evothings.scriptsLoaded(initialise) },
+		false)
+	</script>
+</body>
+</html>
