@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Onsen UI Kitchen Sink Example</title>
+	<script src="cordova.js"></script>
+	<link rel="stylesheet" href="lib/onsenui/css/onsenui.css">
+	<link rel="stylesheet" href="lib/onsenui/css/onsen-css-components.css">
+	<style>
+		@import 'ui/css/evothings-app.css';
+	</style>
+	<script>
+	// Redirect console.log to Evothings Workbench.
+	if (window.hyper && window.hyper.log) { console.log = hyper.log }
+	</script>
+	<script src="lib/onsenui/js/angular/angular.js"></script>
+	<script src="lib/onsenui/js/onsenui.js"></script>
+	<script>
+		ons.bootstrap();
+	</script>
+</head>
+<body>
+	<header>
+		<button class="back" onclick="history.back()">
+			<img src="ui/images/arrow-left.svg" />
+		</button>
+
+		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
+	</header>
+	<div class="page css-component-showcase-inner" style="position: static; height: 568px;">
+		<div class="navigation-bar">
+			<div class="navigation-bar__center navigation-bar__title">Range</div> 
+		</div>
+		<br>
+		<ul class="list">
+			<li class="list__item" style="text-align: center;">
+				<div style="float: left"><i class="fa fa-volume-down fa-fw"></i></div>
+				<div style="float: right"><i class="fa fa-volume-up fa-fw"></i></div>
+				<input type="range" value="50" style="margin-top: 6px; width: 200px;">
+			</li>
+			<li class="list__item" style="text-align: center;">
+				<div style="float: left"><i class="fa fa-umbrella fa-fw" style="opacity: 0.3"></i></div>
+				<div style="float: right"><i class="fa fa-umbrella fa-fw"></i></div>
+				<input type="range" value="12" style="margin-top: 6px; width: 200px;">
+			</li>
+			<li class="list__item" style="text-align: center;">
+				<div style="float: left"><i class="fa fa-sun-o fa-fw" style="opacity: 0.3"></i></div>
+				<div style="float: right"><i class="fa fa-sun-o fa-fw"></i></div>
+				<input type="range" value="80" style="margin-top: 6px; width: 200px;">
+			</li>
+			<li class="list__item" style="text-align: center;">
+				<div style="float: left"><i class="fa fa-bolt fa-fw" style="opacity: 0.3"></i></div>
+				<div style="float: right"><i class="fa fa-bolt fa-fw"></i></div>
+				<input type="range" value="32" style="margin-top: 6px; width: 200px;">
+			</li>
+			<li class="list__item" style="text-align: center;">
+				<div style="float: left"><i class="fa fa-moon-o fa-fw" style="opacity: 0.3"></i></div>
+				<div style="float: right"><i class="fa fa-moon-o fa-fw"></i></div>
+				<input type="range" value="68" style="margin-top: 6px; width: 200px;">
+			</li>
+		</ul>
+		<br>
+	</div>
+</body>
+</html>
