@@ -35,11 +35,11 @@ File root;
 
 // Your network SSID (network name).
 // TODO: Enter the name of your wifi network here.
-char ssid[] = "SoKamal2";
+char ssid[] = "yourssid";
 
 // Your network password.
 // TODO: Enter the password of your wifi network here.
-char pass[] = "o3oo8566658";
+char pass[] = "yourpassword";
 
 // Your network key Index number (needed only for WEP).
 //int keyIndex = 0;
