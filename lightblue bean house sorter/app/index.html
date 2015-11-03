@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Harry Potter House Selector</title>
+  <script src="cordova.js"></script>
+	<script src="libs/evothings/evothings.js"></script>
+	<script src="libs/evothings/easyble/easyble.js"></script>
+  <script type='text/javascript' src='libs/jquery/jquery.js'></script>
+  
+  <script type='text/javascript' src='app.js'></script>
+  <script type='text/javascript' src='animation.js'></script>
+  <link rel="stylesheet" href="ui/css/animation.css">  
+	<script>
+	// Redirect console.log to Evothings Workbench.
+	if (window.hyper && window.hyper.log) { console.log = hyper.log }
+	</script>
+	
+	<style>
+		#houseimg{
+			height: 360px;
+			width: 660px;
+			display:none;
+		}
+	</style>
+
+</head>
+<body>
+	<div id="genie" class="catHolder"> <span class="head">
+		<span class="face">
+			<span class="socket">
+			<span class="eye">
+				<span class="lidT"></span>
+	<span class="pup"></span>
+	<span class="lidB"></span>
+	</span>
+	</span> <span class="socket">
+			<span class="eye">
+				<span class="lidT"></span>
+	<span class="pup"></span>
+	<span class="lidB"></span>
+	</span>
+	</span> <span class="smile">
+				<span class="hC"><span class="teethLine"></span><span class="tL"></span><span class="tL"></span>  <span class="tL"></span><span class="tL"></span><span class="tL"></span></span>
+	</span>
+	</span>
+	</span>
+	</div>
+	<div id="announcer">
+	<image src="" id="houseimg">
+	</div>  
+	<div class="controls clearfix"></div>
+	<script>
+		app.connect();
+	</script>
+</body>
+</html>
