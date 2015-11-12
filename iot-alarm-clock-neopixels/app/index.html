@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>IoT Alarm Clock with Neopixel Ring</title>
+<link rel="stylesheet" href="libs/onsenui/css/onsenui.css">
+<link rel="stylesheet" href="libs/onsenui/css/onsen-css-components.css">
+<style>
+	@import 'ui/css/evothings-app.css';
+	input[type="date"],input[type="time"] {
+		width: 50%;
+
+		padding: 7px 14px 7px 14px;
+
+		font-family: inherit;
+		font-size: 63%;
+		color: #000;
+
+		border-radius: 4px;
+		border: none;
+
+		background-color: #f3f3f3; /* Default color: "Arctic". */
+	}
+</style>
+<script>
+// Redirect console.log to Evothings Workbench.
+if (window.hyper && window.hyper.log) { console.log = hyper.log }
+</script>
+<script src="cordova.js"></script>
+<script src="libs/onsenui/js/angular/angular.js"></script>
+<script src="libs/onsenui/js/onsenui.js"></script>
+<script src='libs/jquery/jquery.js'></script>
+<script src='app.js'></script>
+<script>
+	ons.bootstrap();
+</script>
+</head>
+<body>
+	<header>
+		<button class="back" onclick="history.back()">
+			<img src="ui/images/arrow-left.svg" />
+		</button>
+		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
+	</header>
+	<h1>Configure IoT Alarm</h1>
+	<h2>Time</h2> 	
+	<input type="time" id="alarmtime" class="text-input"/>
+	<h2>Repeat Everyday</h2>
+	<ons-switch var="mySwitch"></ons-switch>
+	<br/>
+	<button class="green" onclick="app.timer()">SET ALARM</button>
+	<button id ="turnoff" class="red" onclick="app.alarmoff()" style="display:none;">TURN OFF ALARM</button>
+	<p id="result"></p>
+</body>
+</html>

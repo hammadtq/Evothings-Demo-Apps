@@ -1,0 +1,66 @@
+/*
+*	Description: Example Particle Core (formerly Spark Core) firmware code for 
+*	Evothings example of configurable IoT Alarm app
+*	Author: Hammad Tariq
+*	Date: 08 Nov, 2015
+*/
+
+#include "application.h"
+#include "neopixel/neopixel.h"
+
+SYSTEM_MODE(AUTOMATIC);
+
+// IMPORTANT: Set pixel COUNT, PIN and TYPE
+#define PIXEL_PIN D2
+#define PIXEL_COUNT 24
+#define PIXEL_TYPE WS2812
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
+
+uint16_t ring;
+
+void setup() 
+{
+  
+  strip.begin();
+  strip.show(); // Initialize all pixels to 'off'
+  Particle.function("alarm",updatePixels);
+}
+void loop() 
+{
+  if(ring == 1){
+    colorWipe(strip.Color(63, 20, 20), 50); // Soft red
+    delay(2000);
+    colorWipe(strip.Color(128, 76, 25), 50); // Orange
+    delay(2000);
+    colorWipe(strip.Color(255, 255, 102), 50); // Bright yellow
+    ring = 0;
+  }
+}
+
+int updatePixels(String command) {
+  uint16_t i, j;
+  
+  if (command=="on") {
+    ring = 1;
+  
+  return 1;
+  }else{
+      for(i=0; i<strip.numPixels(); i++) {
+            strip.setPixelColor(i, 0,0,0);
+        }
+      
+      strip.show();
+      return 0;
+  }
+}
+
+// Fill the dots one after the other with a color
+void colorWipe(uint32_t c, uint8_t wait) {
+  for(uint16_t i=0; i<strip.numPixels(); i++) {
+    strip.setPixelColor(i, c);
+    strip.show();
+    delay(wait);
+  }
+}
+
