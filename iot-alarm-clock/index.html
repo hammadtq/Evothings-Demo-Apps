@@ -29,70 +29,13 @@ if (window.hyper && window.hyper.log) { console.log = hyper.log }
 <script src="cordova.js"></script>
 <script src="libs/onsenui/js/angular/angular.js"></script>
 <script src="libs/onsenui/js/onsenui.js"></script>
+<script src="libs/jquery/jquery.js"></script>
+<script src="app.js"></script>
 <script>
-	ons.bootstrap();
-</script>
-<script>
-// set wakeup timer
-function timer(){
-	var repeat = mySwitch.isChecked() //check if repeat switch is on or off
-	var time = document.getElementById("alarmtime").value
-	if(time != ""){
-		time = time.split(":")
-		//if repeat switch is on, we will set the alarm to be repeated at the same time everyday
-		//if repeat switch is off, the alarm will be set for one time only
-		if(repeat == true){
-			window.wakeuptimer.wakeup( successCallback,  
-				errorCallback, 
-			// setting alarms, alarm will be set to repeat on all given days
-			{
-				alarms : [{
-					type : 'daylist',
-					time : { hour : time[0], minute : time[1] },
-					extra : { message : 'json containing app-specific information to be posted when alarm triggers' },
-					days : ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"], 
-					message : 'Alarm has expired!'
-				}] 
-			}
-			);
-		}else{
-			window.wakeuptimer.wakeup( successCallback,  
-				errorCallback, 
-			// a list of alarms to set
-			{
-				alarms : [{
-					type : 'onetime',
-					time : { hour : time[0], minute : time[1] },
-					extra : { message : 'json containing app-specific information to be posted when alarm triggers' },
-					message : 'Alarm has expired!'
-				}] 
-			}
-			);
-		}
-	}else{
-		alert("Alarm time cannot be empty");
-	}
-}
-
-// this function is called upon receiving success message
-var successCallback = function(result) {
-	if (result.type==='wakeup') {
-		console.log('wakeup alarm detected--' + result.extra);
-		document.getElementById('alarm-img').style.display = 'block';
-	} else if(result.type==='set'){
-		console.log('wakeup alarm set--' + result);
-	} else {
-		console.log('wakeup unhandled type (' + result.type + ')');
-	}
-}; 
-
-// this function is called if an error has occurred while setting the alarm
-var errorCallback = function(result) {
-	console.log("Error");
-}; 
+	ons.bootstrap()
 </script>
 </head>
-<body onload="onLoad()">
+<body>
 	<header>
 		<button class="back" onclick="history.back()">
 			<img src="ui/images/arrow-left.svg" />
@@ -105,7 +48,7 @@ var errorCallback = function(result) {
 	<h2>Repeat Everyday</h2>
 	<ons-switch var="mySwitch"></ons-switch>
 	<br/>
-	<button class="green" onclick="timer();">SET ALARM</button>
+	<button class="green" onclick="app.timer()">SET ALARM</button>
 	<div id="alarm-img" style="display:none;text-align:center">
 		<img src ="ui/images/Animated-black-and-white-clip-art-alarm-clock-ringing.gif">
 	</div>
