@@ -1,5 +1,5 @@
 /*
-	Description: JavaScript code for IoT Alarm Clock with Neopixels examples
+	Description: JavaScript code for IoT Alarm app with Neopixels examples
 	Author: Hammad Tariq
 	Date: 08 Nov, 2015
 */
