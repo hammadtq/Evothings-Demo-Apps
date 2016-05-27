@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<!--
+	Demonstration of the TI SensorTag JavaScript library.
+-->
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="width=device-width, user-scalable=no,
+		shrink-to-fit=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+
+	<title>Bluemix IoT Cloud with TI SensorTag CC2650</title>
+
+	<style>
+		@import 'ui/css/evothings-app.css';
+	</style>
+
+	<script>
+	// Redirect console.log to Evothings Workbench.
+	if (window.hyper && window.hyper.log) { console.log = hyper.log }
+	</script>
+
+	<script src="cordova.js"></script>
+	<script src="app.js"></script>
+	<script src="libs/mqttws31-min.js"></script>
+	<script src="libs/jquery/jquery.js"></script>
+	<script src="libs/evothings/evothings.js"></script>
+	<script src="libs/evothings/ui/ui.js"></script>
+	<script src="libs/evothings/tisensortag/tisensortag.js"></script>
+</head>
+
+<body>
+
+	<header>
+		<button class="back" onclick="history.back()">
+			<img src="ui/images/arrow-left.svg" />
+		</button>
+		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
+		<!--<button class="menu" onclick=""><img src="ui/images/menu.svg" /></button>-->
+	</header>
+
+	<h1>Bluemix IoT Cloud with TI SensorTag CC2650</h1>
+
+	<img src="TISensorTagCC2650.png"
+		style="float:right;width:120px;height:auto;"/>
+
+	<p>
+		This example works with the <strong>TI SensorTag CC2650</strong>. It also works with the TI SensorTag CC2541 if you modify file index.html. Activate the SensorTag and press Connect to begin.
+	</p>
+
+	<p id="upgradeNotice" class="hidden">
+		<span class="color_softred">Please upgrade the firmware of your SensorTag.</span>
+	</p>
+
+	<button onclick="connect()" class="green">
+		Connect
+	</button>
+
+	<button onclick="disconnect()" class="charcoal">
+		Disconnect
+	</button>
+
+	<p>
+		<span id="StatusData">Press Connect to find the nearest SensorTag</span>
+	</p>
+	
+	<p>
+	<strong>Communication status:</strong> <span id="status">Click the activate button on the SensorTag and tap the Start button to begin</span>
+	</p>
+
+	<h2>Temperature:</h2>
+	<p>
+		<span id="TemperatureData">[Waiting for value]</span>
+	</p>
+
+	<h2>Humidity:</h2>
+	<p>
+		<span id="HumidityData">[Waiting for value]</span>
+	</p>
+
+	<div id="Luxometer">
+		<h2>Luxometer:</h2>
+		<p>
+			<span id="LuxometerData">[Waiting for value]</span>
+		</p>
+	</div>
+
+	<script>
+	// SensorTag object.
+	var sensortag
+	
+	// Update interval is once each minute. You can make
+	// this value smaller to get more frequent updates.
+	var temperatureInterval = 6000 // Change to 5000 for 5 second intervals.
+
+	// Timer for temperature upload.
+	var temperatureTimer = null
+
+	// Variable that holds last known temperature reading.
+	var lastTemperatureReading = '0.0'
+	
+	// Variable that holds last known humidity reading.
+	var lastHumidityReading = '0.0'
+
+	function initialiseSensorTag()
+	{
+		// Create SensorTag CC2650 instance.
+		sensortag = evothings.tisensortag.createInstance(
+			evothings.tisensortag.CC2650_BLUETOOTH_SMART)
+
+		// Uncomment to use SensorTag CC2541.
+		//sensortag = evothings.tisensortag.createInstance(
+		//	evothings.tisensortag.CC2541_BLUETOOTH_SMART)
+
+		//
+		// Here sensors are set up.
+		//
+		// If you wish to use only one or a few sensors, just set up
+		// the ones you wish to use.
+		//
+		// First parameter to sensor function is the callback function.
+		// Several of the sensors take a millisecond update interval
+		// as the second parameter.
+		//
+		sensortag
+			.statusCallback(statusHandler)
+			.errorCallback(errorHandler)
+			.temperatureCallback(temperatureHandler, 1000)
+			.humidityCallback(humidityHandler, 1000)
+			.luxometerCallback(luxometerHandler, 1000)
+	}
+
+	function connect()
+	{
+		sensortag.connectToNearestDevice()
+		
+		// Clear existing interval timer if any.
+		temperatureTimer && clearInterval(temperatureTimer)
+
+		// Start the interval timer for uploading data. 
+		temperatureTimer = setInterval(onTemperatureTimer, temperatureInterval)
+	}
+
+	function disconnect()
+	{
+		sensortag.disconnectDevice()
+		resetSensorDisplayValues()
+	}
+	
+
+	function statusHandler(status)
+	{
+		if ('DEVICE_INFO_AVAILABLE' == status)
+		{
+			// Show a notification about that the firmware should be
+			// upgraded if the connected device is a SensorTag CC2541
+			// with firmware revision less than 1.5, since this the
+			// SensorTag library does not support these versions.
+			var upgradeNotice = document.getElementById('upgradeNotice')
+			if ('CC2541' == sensortag.getDeviceModel() &&
+				parseFloat(sensortag.getFirmwareString()) < 1.5)
+			{
+				upgradeNotice.classList.remove('hidden')
+			}
+			else
+			{
+				upgradeNotice.classList.add('hidden')
+			}
+
+			// Show device model and firmware version.
+			displayValue('DeviceModel', sensortag.getDeviceModel())
+			displayValue('FirmwareData', sensortag.getFirmwareString())
+
+			// Show which sensors are not supported by the connected SensorTag.
+			if (!sensortag.isLuxometerAvailable())
+			{
+				document.getElementById('Luxometer').style.display = 'none'
+			}
+		}
+
+		displayValue('StatusData', status)
+	}
+
+	function errorHandler(error)
+	{
+		console.log('Error: ' + error)
+
+		if (evothings.easyble.error.DISCONNECTED == error)
+		{
+			resetSensorDisplayValues()
+		}
+		else
+		{
+			displayValue('StatusData', 'Error: ' + error)
+		}
+	}
+
+	function temperatureHandler(data)
+	{
+		// Calculate temperature from raw sensor data.
+		var values = sensortag.getTemperatureValues(data)
+		var ac = values.ambientTemperature
+		lastTemperatureReading = ac.toFixed(2)
+		$('#TemperatureData').text(lastTemperatureReading);
+		//console.log(lastTemperatureReading)
+	}
+	
+	function onTemperatureTimer()
+	{
+		// Save the temperature value to the Bluemix IoT Foundation cloud
+		var evt = JSON.stringify({ambientTemp: lastTemperatureReading, humidity: lastHumidityReading, light: lastLightReading})
+		//send to MQTT publish function
+		app.publish(evt)
+	}
+	
+
+	function statusHandler(status)
+	{
+		displayMessage(status)
+	}
+
+	function errorHandler(error)
+	{
+		displayMessage('SensorTag error: ' + error)
+	}
+
+	function displayMessage(message)
+	{
+		document.getElementById('status').innerHTML = message
+		console.log(message)
+	}
+
+	function humidityHandler(data)
+	{
+		// Calculate the humidity values from raw data.
+		var values = sensortag.getHumidityValues(data)
+
+		// Calculate the humidity temperature (C)
+		var tc = values.humidityTemperature
+		
+		lastHumidityReading = tc.toFixed(2)
+		$('#HumidityData').text(lastHumidityReading)
+		//console.log(lastHumidityReading)
+	}
+
+	function luxometerHandler(data)
+	{
+		var value = sensortag.getLuxometerValue(data)
+		
+		lastLightReading = value.toPrecision(5)
+		$('#LuxometerData').text(lastLightReading)
+		//console.log(lastLightReading)
+	}
+
+	function displayValue(elementId, value)
+	{
+		document.getElementById(elementId).innerHTML = value
+	}
+
+	
+	document.addEventListener(
+		'deviceready',
+		function() { evothings.scriptsLoaded(initialiseSensorTag) },
+		false)
+	</script>
+
+</body>
+
+</html>
