@@ -30,6 +30,8 @@ Demonstration sensor broadcast with Pubnub realtime data stream network.
 	
 	var manufacturer
 	var pubnub
+	var device1 = 'samsung'
+	var device2 = 'HUAWEI'
 	
 	function init(){
 		// Find the device manufacturer
@@ -38,8 +40,8 @@ Demonstration sensor broadcast with Pubnub realtime data stream network.
 		
 		// Initialize the pubnub instance
 		pubnub = PUBNUB.init({
-			publish_key: 'pub-c-1bf5d7b5-3726-4ded-9f79-c8f56a158964',
-			subscribe_key: 'sub-c-a524484e-be9c-11e3-9559-02ee2ddab7fe',
+			publish_key: 'your-publish-key',
+			subscribe_key: 'your-subscribe-key',
 			ssl: true,
 			error: function (error) {
 				console.log('Error:', error);
@@ -68,7 +70,7 @@ Demonstration sensor broadcast with Pubnub realtime data stream network.
 		});
 	
 		// Replace following condition with your own phone manufacturer names
-		if(manufacturer == 'samsung' || manufacturer == 'HUAWEI'){	
+		if(manufacturer == device1 || manufacturer == device2){	
 			initialiseAccelerometer()
 		}
 	}
@@ -99,7 +101,7 @@ Demonstration sensor broadcast with Pubnub realtime data stream network.
 		var dz = Math.round(accelerationZ * -10)
 		
 		// see if we are publishing the accelerometer readings for samsung or Huawei
-		if(manufacturer == 'samsung'){
+		if(manufacturer == device1){
 			var evt = JSON.stringify({xaxis1: dx, yaxis1: dy, zaxis1: dz})
 		}else{
 			var evt = JSON.stringify({xaxis2: dx, yaxis2: dy, zaxis2: dz})
