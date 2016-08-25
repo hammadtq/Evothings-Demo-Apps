@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<!--
+Demonstration sensor broadcast with Pubnub realtime data stream network.
+-->
+<head>
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, user-scalable=no,
+		shrink-to-fit=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+
+	<title>Sensor Broadcast with Pubnub</title>
+
+	<style>
+		@import 'ui/css/evothings-app.css';
+	</style>
+
+	<script>
+	// Redirect console.log to Evothings Workbench.
+	if (window.hyper && window.hyper.log) { console.log = hyper.log }
+	</script>
+	
+	<script src="cordova.js"></script>
+	<script src="libs/evothings/evothings.js"></script>
+	<script src="libs/evothings/ui/ui.js"></script>
+	<script src="libs/jquery/jquery.js"></script>
+	<script src="libs/pubnub/pubnub-3.15.2.min.js"></script>
+	
+	<script>
+	
+	var manufacturer
+	var pubnub
+	
+	function init(){
+		// Find the device manufacturer
+		manufacturer = device.manufacturer
+		console.log(manufacturer)
+		
+		// Initialize the pubnub instance
+		pubnub = PUBNUB.init({
+			publish_key: 'pub-c-1bf5d7b5-3726-4ded-9f79-c8f56a158964',
+			subscribe_key: 'sub-c-a524484e-be9c-11e3-9559-02ee2ddab7fe',
+			ssl: true,
+			error: function (error) {
+				console.log('Error:', error);
+			}
+		});
+		
+		// Subscribe to a channel 
+		pubnub.subscribe({
+			channel : 'my_channel',
+			message : function(m){
+				var obj = jQuery.parseJSON(m)
+				if(obj.xaxis1 != undefined){
+					$("#x1").html(obj.xaxis1)
+					$("#y1").html(obj.yaxis1)
+					$("#z1").html(obj.zaxis1)
+				}else{
+					$("#x2").html(obj.xaxis2)
+					$("#y2").html(obj.yaxis2)
+					$("#z2").html(obj.zaxis2)
+				}
+			},
+			error : function (error) {
+				// Handle error here
+				console.log(JSON.stringify(error));
+			}
+		});
+	
+		// Replace following condition with your own phone manufacturer names
+		if(manufacturer == 'samsung' || manufacturer == 'HUAWEI'){	
+			initialiseAccelerometer()
+		}
+	}
+	
+	function initialiseAccelerometer()
+	{
+		function onSuccess(acceleration)
+		{
+			accelerometerHandler(acceleration.x, acceleration.y, acceleration.z)
+		}
+
+		function onError(error)
+		{
+			console.log('Accelerometer error: ' + error)
+		}
+
+		navigator.accelerometer.watchAcceleration(
+			onSuccess,
+			onError,
+			{ frequency: 300 })
+	}
+
+
+	function accelerometerHandler(accelerationX, accelerationY, accelerationZ)
+	{
+		var dx = Math.round(accelerationX * -10)
+		var dy = Math.round(accelerationY * -10)
+		var dz = Math.round(accelerationZ * -10)
+		
+		// see if we are publishing the accelerometer readings for samsung or Huawei
+		if(manufacturer == 'samsung'){
+			var evt = JSON.stringify({xaxis1: dx, yaxis1: dy, zaxis1: dz})
+		}else{
+			var evt = JSON.stringify({xaxis2: dx, yaxis2: dy, zaxis2: dz})
+		}
+		
+		// publish accelerometer readings to pubnub
+		pubnub.publish({
+			channel : 'my_channel',
+			message : evt
+		});
+	}
+	document.addEventListener("deviceready", init, false);
+	</script>
+
+</head>
+
+<body ontouchstart=""><!-- ontouchstart="" enables low-delay CSS transitions. -->
+
+	<header>
+		<button class="back" onclick="history.back()">
+			<img src="ui/images/arrow-left.svg" />
+		</button>
+
+		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
+
+		<!--<button class="menu" onclick=""><img src="ui/images/menu.svg" /></button>-->
+	</header>
+
+	<h1>Sensor Broadcast with Pubnub</h1>
+	<h3>Samsung</h3>
+	<p>
+	X1:<span id = "x1"></span><br/>
+	Y1:<span id = "y1"></span><br/>
+	Z1:<span id = "z1"></span><br/>
+	</p>
+	<h3>Huawei</h3>
+	<p>
+	X2:<span id = "x2"></span><br/>
+	Y2:<span id = "y2"></span><br/>
+	Z2:<span id = "z2"></span><br/>
+	</p>
+	<p>This example demonstrates the use of Pubnub as 1:many multicast cloud for realtime IoT apps.</p>
+	<p>You will need 3 mobile phones for this example to work. One of them will work just as a subscriber
+	while other two will work as publishers and subscribers to the multicast. Modify index.html to change the
+	names of mobile phone manufacturers (according to your own availability) or create another condition such 
+	as distinguishing on the basis of UUID of the mobile phone.</p>
+</body>
+
+</html>
