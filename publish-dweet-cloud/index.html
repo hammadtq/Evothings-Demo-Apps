@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, user-scalable=no,
+		shrink-to-fit=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+
+	<title>Publishing Sensor Readings as Dweets</title>
+
+	<style>
+		@import 'ui/css/evothings-app.css';
+	</style>
+	<style>
+	.dweet-tweet {  
+	  font-family: "Helvetica Neue", Roboto, "Segoe UI", Calibri, sans-serif;
+	  font-size: 12px;
+	  font-weight: bold;
+	  line-height: 16px;
+	  border-color: #eee #ddd #bbb;
+	  border-radius: 5px;
+	  border-style: solid;
+	  border-width: 1px;
+	  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+	  margin: 10px 5px;
+	  padding: 0 16px 16px 16px;
+	  max-width: 468px;
+	}
+	</style>
+	<script>
+	// Redirect console.log to Evothings Workbench.
+	if (window.hyper && window.hyper.log) { console.log = hyper.log }
+	</script>
+
+</head>
+
+<body ontouchstart=""><!-- ontouchstart="" enables low-delay CSS transitions. -->
+
+	<header>
+		<button class="back" onclick="history.back()">
+			<img src="ui/images/arrow-left.svg" />
+		</button>
+
+		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
+
+		<!--<button class="menu" onclick=""><img src="ui/images/menu.svg" /></button>-->
+	</header>
+
+	<h1>Publishing Sensor Readings as Dweets</h1>
+
+	<p>In this example we are publishing mobile phone's accelerometer sensor readings to dweet.io after every 2 seconds for 5 times. After publishing we fetch all latest dweets and show them in descending order.</p>
+	<p>Published <span id="count">0</span> dweets!</p>
+	<p id="dweet"></p> 
+
+	<script src="cordova.js"></script>
+	<script src="libs/evothings/evothings.js"></script>
+	<script src="libs/evothings/ui/ui.js"></script>
+	<script src="libs/jquery/jquery.js"></script>
+	<script src="//dweet.io/client/dweet.io.min.js"></script>
+	<script>
+	var count = 0
+	var watchID
+	function init(){
+		initialiseAccelerometer()
+	}	
+		
+	function initialiseAccelerometer()
+	{
+		function onSuccess(acceleration)
+		{
+			accelerometerHandler(acceleration.x, acceleration.y, acceleration.z)
+		}
+
+		function onError(error)
+		{
+			console.log('Accelerometer error: ' + error)
+		}
+
+		watchID = navigator.accelerometer.watchAcceleration(
+						onSuccess,
+						onError,
+						{ frequency: 2000 })
+	}
+
+	function accelerometerHandler(accelerationX, accelerationY, accelerationZ)
+	{
+		var dx = Math.round(accelerationX * -10)
+		var dy = Math.round(accelerationY * -10)
+		var dz = Math.round(accelerationZ * -10)
+		
+		//lets JSON encode the data before dweeting
+		var evtdata = JSON.stringify({xaxis: dx, yaxis: dy, zaxis: dz}) 
+		
+		//Send a dweet with sensor data
+		dweetio.dweet_for("evothings-workspace", {evt:evtdata}, function(err, dweet){
+		})
+		
+		count++
+		$("#count").text(count)
+		
+		//we will stop watching acceleration if we have published 5 dweets
+		if(count >= 5){
+			navigator.accelerometer.clearWatch(watchID)
+			getDweets()
+		}
+	}
+	
+	function getDweets(){
+		dweetio.get_all_dweets_for("evothings-workspace", function(err, dweets){
+
+			// loop through the dweets and show only last 5
+			for(var i = 0; i <=5; i++)
+			{
+				var dweet = dweets[i];
+				var obj = jQuery.parseJSON(dweet.content.evt)
+				$("#dweet").append("<div class='dweet-tweet'>Dweet: "+(i+1)+"<br/>X-axis: "+obj.xaxis+"<br/>Y-axis: "+obj.yaxis+"<br/>Z-axis: "+obj.zaxis+"<br/>Published: "+dweet.created+"</div>")
+			}
+
+		});
+	}	
+	document.addEventListener("deviceready", init, false);
+	</script>
+</body>
+</html>

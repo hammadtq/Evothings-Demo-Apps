@@ -1,0 +1,17 @@
+{
+  "name": "publishing-sensor-readings-as-dweets",
+  "version": "1.0",
+  "title": "Basic Template App",
+  "description": "Publishing sensor readings as dweets.",
+  "tags": [],
+  "libraries": [
+    {
+      "name": "jquery",
+      "version": "2.1.1"
+    }
+  ],
+  "index-file": "index.html",
+  "uuid": "6c4b3eb1-1c8d-4508-854d-29064fa6d8b1",
+  "icon": "app-icon.png",
+  "doc-url": "https://evothings.com/2.1/doc/examples/template-basic-app.html"
+}
