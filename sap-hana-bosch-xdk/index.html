@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, user-scalable=no,
+		shrink-to-fit=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+
+	<title>Using SAP HANA IoT cloud with Evothings</title>
+
+	<script>
+	// Redirect console.log to Evothings Workbench.
+	if (window.hyper && window.hyper.log) { console.log = hyper.log }
+	window.onerror = function(msg, url, line)
+	{
+		console.log(msg + ": " + url + ":" + line);
+	};
+	</script>
+	<link rel="stylesheet" href="app.css">
+	<link rel="stylesheet" href="mdl/material.min.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+ 
+</head>
+
+<body>
+
+	<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+
+  <!-- Header -->
+  <header class="mdl-layout__header">
+
+    <button class="app-back mdl-layout-icon mdl-button mdl-js-button mdl-button--icon">
+      <i class="material-icons">arrow_back</i>
+    </button>
+
+    <div class="mdl-layout__header-row">
+
+      <!-- Title -->
+      <span class="mdl-layout-title">SAP HANA IoT Cloud</span>
+      <div class="mdl-layout-spacer"></div>
+      <!-- Back button -->
+      <nav class="mdl-navigation">
+        <a class="app-back mdl-navigation__link" href="javascript:void(0)">Back</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Side menu -->
+  <div class="mdl-layout__drawer">
+    <span class="mdl-layout-title">Menu</span>
+    <nav class="mdl-navigation">
+    </nav>
+  </div>
+
+  <!-- Main -->
+  <main class="mdl-layout__content">
+
+    <!-- page-start -->
+    <section>
+      <div class="page-content">
+
+        <!-- Raised button with ripple
+        https://material.google.com/style/color.html#color-color-palette
+        -->
+        <p id="status">Waiting for user input</p>
+        <div class="app-buttons">
+          <button class="app-connect-xdk mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-color-text--white mdl-button--disabled">
+              Connect
+          </button>
+        </div>
+        <div class="app-buttons">
+          <button class="app-start-push mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-color-text--white mdl-button--disabled">
+              Send to Cloud
+          </button>
+        </div>
+
+        <div class="mdl-progress mdl-js-progress"></div>
+        
+        <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+        <thead>
+			<tr>
+			  <th class="mdl-data-table__cell--non-numeric">Sensor</th>
+			  <th class="mdl-data-table__cell--non-numeric">Value</th>
+			</tr>
+		  </thead>
+		  <tbody>
+			<tr>
+				<td class="mdl-data-table__cell--non-numeric">Accelerometer<br/>raw data:</td>
+				<td id="accelerometerRaw" width="100%" class="mdl-data-table__cell--non-numeric">&nbsp;</td>
+			</tr>
+			<tr>
+				<td class="mdl-data-table__cell--non-numeric">Accelerometer<br/>data:</td>
+				<td id="accelerometer" class="mdl-data-table__cell--non-numeric"></td>
+			</tr>
+			<tr>
+				<td class="mdl-data-table__cell--non-numeric">Gyroscope<br/>raw data:</td>
+				<td id="gyroscopeRaw" class="mdl-data-table__cell--non-numeric"></td>
+			</tr>
+			<tr>
+				<td class="mdl-data-table__cell--non-numeric">Gyroscope<br/>data:</td>
+				<td id="gyroscope" class="mdl-data-table__cell--non-numeric"></td>
+			</tr>
+			<tr>
+				<td class="mdl-data-table__cell--non-numeric">Magnetometer<br/>raw data:</td>
+				<td id="magnetometerRaw" class="mdl-data-table__cell--non-numeric"></td>
+			</tr>
+			<tr>
+				<td class="mdl-data-table__cell--non-numeric">Magnetometer<br/>data:</td>
+				<td id="magnetometer" class="mdl-data-table__cell--non-numeric"></td>
+			</tr>
+			<tr>
+				<td class="mdl-data-table__cell--non-numeric">Environmental<br/>raw data:</td>
+				<td id="environmentalRaw" class="mdl-data-table__cell--non-numeric"></td>
+			</tr>
+			<tr>
+				<td class="mdl-data-table__cell--non-numeric">Environmental<br/>data:</td>
+				<td id="environmental" class="mdl-data-table__cell--non-numeric"></td>
+			</tr>
+			<tr>
+				<td class="mdl-data-table__cell--non-numeric">Light sensor<br/>raw data:</td>
+				<td id="lightRaw"></td>
+			</tr>
+			<tr>
+				<td class="mdl-data-table__cell--non-numeric">Light sensor<br/>data:</td>
+				<td id="light"></td>
+			</tr>
+			</tbody>
+		</table>
+
+        <div class="app-info">This app works in Evothings Viewer 1.5 or later.</div>
+
+        <!-- Found devices are inserted into this div -->
+        <div class="app-cards"></div>
+
+      </div>
+      <!-- End page-content -->
+    </section>
+
+
+  </main>
+
+  <!-- Toast element used for messages -->
+  <div class="mdl-snackbar mdl-js-snackbar">
+    <div class="mdl-snackbar__text"></div>
+    <button class="mdl-snackbar__action" type="button"></button>
+  </div>
+
+</div>
+ <script src="cordova.js"></script>
+ <script src="libs/evothings/evothings.js"></script>
+ <script src="libs/jquery/jquery.js"></script>
+ <script src="libs/fastclick/fastclick.js"></script>
+ <script src="libs/evothings/util/util.js"></script>
+ <script src="libs/evothings/easyble/easyble.js"></script>
+ <script src="app.js"></script>
+ <script src="mdl/material.min.js"></script>
+
+</body>
+</html>
