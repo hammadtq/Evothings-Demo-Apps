@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<!--
+	Demonstration of the TI SensorTag JavaScript library.
+-->
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="width=device-width, user-scalable=no,
+		shrink-to-fit=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+
+	<title>Firebase with TI SensorTag CC2650</title>
+
+	<script>
+	// Redirect console.log to Evothings Workbench.
+	if (window.hyper && window.hyper.log) { console.log = hyper.log }
+	</script>
+	
+	<link rel="stylesheet" href="app.css">
+  	<link rel="stylesheet" href="libs/mdl/material.css">
+  	<link rel="stylesheet" href="libs/mdl/icons/material-icons.css">
+
+</head>
+
+<body>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+	<!-- Header -->
+  <header class="mdl-layout__header">
+
+    <button class="app-back mdl-layout-icon mdl-button mdl-js-button mdl-button--icon">
+      <i class="material-icons">arrow_back</i>
+    </button>
+
+    <div class="mdl-layout__header-row">
+
+      <!-- Title -->
+      <span class="mdl-layout-title">Firebase IoT Cloud</span>
+      <div class="mdl-layout-spacer"></div>
+      <!-- Back button -->
+      <nav class="mdl-navigation">
+        <a class="app-back mdl-navigation__link" href="javascript:void(0)">Back</a>
+      </nav>
+    </div>
+  </header>
+  
+  <!-- Side menu -->
+  <div class="mdl-layout__drawer">
+    <span class="mdl-layout-title">Menu</span>
+    <nav class="mdl-navigation">
+    </nav>
+  </div>
+
+  
+  <!-- Main -->
+  <main class="mdl-layout__content">
+
+    <!-- page-start -->
+    <section>
+      <div class="page-content">
+
+        <!-- Raised button with ripple
+        https://material.google.com/style/color.html#color-color-palette
+        -->
+        <div class="app-buttons">
+          <button class="app-connect mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-color-text--white mdl-button--disabled">
+              Connect
+          </button>
+          <button class="app-start-push mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-color-text--white mdl-button--disabled">
+            Send to Cloud
+          </button>
+        </div>
+		<p>
+			<span id="StatusData">Press Connect to find the nearest SensorTag</span>
+		</p>
+	
+		<p>
+			<strong>Communication status:</strong> <span id="status">Click the activate button on the SensorTag and tap the Connect button to begin</span>
+		</p>
+        
+        <div class="mdl-progress mdl-js-progress"></div>
+        
+        <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+        <thead>
+			<tr>
+			  <th class="mdl-data-table__cell--non-numeric">Sensor</th>
+			  <th class="mdl-data-table__cell--non-numeric">Value</th>
+			</tr>
+		  </thead>
+		  <tbody>
+			<tr>
+				<td class="mdl-data-table__cell--non-numeric">Temperature:</td>
+				<td id="TemperatureData" width="100%" class="mdl-data-table__cell--non-numeric">&nbsp;</td>
+			</tr>
+			<tr>
+				<td class="mdl-data-table__cell--non-numeric">Humidity:</td>
+				<td id="HumidityData" class="mdl-data-table__cell--non-numeric"></td>
+			</tr>
+			<tr>
+				<td class="mdl-data-table__cell--non-numeric">Luxometer:</td>
+				<td id="LuxometerData" class="mdl-data-table__cell--non-numeric"></td>
+			</tr>
+		  </tbody>
+		</table>
+        <br/>
+        <p>
+		This example works with the <strong>TI SensorTag CC2650</strong>. It also works with the TI SensorTag CC2541 if you modify file index.html. Activate the SensorTag and press Connect to begin.
+		</p>
+		<p id="upgradeNotice" class="hidden">
+		<span class="color_softred">Please upgrade the firmware of your SensorTag.</span>
+		</p>
+        <div class="app-info">This app works in Evothings Viewer 1.5 or later.</div>
+
+        <!-- Found devices are inserted into this div -->
+        <div class="app-cards"></div>
+
+      </div>
+      <!-- End page-content -->
+    </section>
+
+
+  </main>
+	
+	<!-- Toast element used for messages -->
+  <div class="mdl-snackbar mdl-js-snackbar">
+    <div class="mdl-snackbar__text"></div>
+    <button class="mdl-snackbar__action" type="button"></button>
+  </div>
+</div>
+	
+<script src="cordova.js"></script>
+<script src="libs/jquery/jquery.js"></script>
+<script src="libs/evothings/evothings.js"></script>
+<script src="libs/evothings/tisensortag/tisensortag.js"></script>
+<script src="libs/fastclick/fastclick.js"></script>
+<script src="libs/mdl/material.js"></script>
+<script src="app.js"></script>
+</body>
+
+</html>
