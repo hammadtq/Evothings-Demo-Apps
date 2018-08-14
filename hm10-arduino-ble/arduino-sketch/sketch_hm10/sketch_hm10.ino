@@ -1,5 +1,5 @@
 #include <SoftwareSerial.h>
-#define LED_PIN 2
+#define LED_PIN 13
 
 SoftwareSerial mySerial(7, 8); // RX, TX  
 // Connect HM10      Arduino Uno
